@@ -19,7 +19,7 @@
 ## to change the name in the app_sys() function in app_config.R /!\
 ##
 golem::fill_desc(
-  pkg_name = "mapdo_analysis_golem", # The Name of the package containing the App
+  pkg_name = "mapdoAnalysis", # The Name of the package containing the App
   pkg_title = "Mapd'O Analysis module", # The Title of the package containing the App
   pkg_description = "PKG_DESC.", # The Description of the package containing the App
   author_first_name = "Jan Leo", # Your First Name

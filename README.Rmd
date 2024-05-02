@@ -13,17 +13,17 @@ knitr::opts_chunk$set(
 )
 ```
 
-# mapdo_analysis_golem
+# mapdoAnalysis
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The goal of mapdo_analysis_golem is to ...
+The goal of mapdoAnalysis is to ...
 
 ## Installation
 
-You can install the development version of mapdo_analysis_golem from [GitHub](https://github.com/) with:
+You can install the development version of mapdoAnalysis from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
@@ -35,7 +35,7 @@ devtools::install_github("jlhelling/mapdo_analysis_golem")
 This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
-library(mapdo_analysis_golem)
+library(mapdoAnalysis)
 ## basic example code
 ```
 

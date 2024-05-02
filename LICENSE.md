@@ -1,6 +1,6 @@
 # MIT License
 
-Copyright (c) 2024 mapdo_analysis_golem authors
+Copyright (c) 2024 mapdoAnalysis authors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

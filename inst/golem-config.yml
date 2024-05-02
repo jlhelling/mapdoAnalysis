@@ -1,5 +1,5 @@
 default:
-  golem_name: mapdo_analysis_golem
+  golem_name: mapdoAnalysis
   golem_version: 0.0.0.9000
   app_prod: no
 production:

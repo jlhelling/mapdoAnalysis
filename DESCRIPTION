@@ -1,4 +1,4 @@
-Package: mapdo_analysis_golem
+Package: mapdoAnalysis
 Title: Mapd'O Analysis module
 Version: 0.0.0.9000
 Authors@R: person('Jan Leo', 'Helling', email = 'jan.helling@ens-lyon.fr', role = c('cre', 'aut'))

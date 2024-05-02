@@ -9,7 +9,7 @@
 #'
 #' @noRd
 app_sys <- function(...) {
-  system.file(..., package = "mapdo_analysis_golem")
+  system.file(..., package = "mapdoAnalysis")
 }
 
 
