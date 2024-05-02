@@ -2,6 +2,8 @@
 # To deploy, run: rsconnect::deployApp()
 # Or use the blue button on top of this file
 
+Sys.setlocale("LC_ALL","fr_FR.UTF-8")
+
 pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
 options( "golem.app.prod" = TRUE)
-mapdo_analysis_golem::run_app() # add parameters here (if any)
+mapdoAnalysis::run_app() # add parameters here (if any)

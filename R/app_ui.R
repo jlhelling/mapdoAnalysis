@@ -3,17 +3,21 @@
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
 #' @import shiny
+#' @importFrom bslib bs_theme
+#' @importFrom htmltools img
+#' @importFrom htmltools span
 #' @noRd
-app_ui <- function(request) {
-  tagList(
-    # Leave this function for adding external resources
-    golem_add_external_resources(),
-    # Your application UI logic
-    fluidPage(
-      h1("mapdo_analysis_golem")
-    )
+app_ui <- function(request){
+  navbarPage(
+    theme = bs_theme(version = 5, bootswatch = "simplex"),
+    title = span(shiny::img(src = "inst/app/www/logos_mapdo_evs_ofb.png"), ""),
+    tabPanel("Exploration"),
+    tabPanel("Documentation",
+             icon("info"))
   )
 }
+
+
 
 #' Add external Resources to the Application
 #'
@@ -30,7 +34,7 @@ golem_add_external_resources <- function() {
   )
 
   tags$head(
-    favicon(ext = 'png'),
+    favicon(ext = "png"),
     bundle_resources(
       path = app_sys("app/www"),
       app_title = "mapdo_analysis_golem"
