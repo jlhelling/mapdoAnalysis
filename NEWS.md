@@ -1,3 +1,3 @@
-# mapdo_analysis_golem (development version)
+# mapdoAnalysis (development version)
 
 * Initial CRAN submission.
