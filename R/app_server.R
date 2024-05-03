@@ -6,4 +6,6 @@
 #' @noRd
 app_server <- function(input, output, session) {
   # Your application server logic
+
+  mod_analysis_server("analysis_1")
 }

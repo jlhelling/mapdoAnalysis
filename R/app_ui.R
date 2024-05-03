@@ -4,16 +4,15 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @importFrom bslib bs_theme
-#' @importFrom htmltools img
-#' @importFrom htmltools span
 #' @noRd
 app_ui <- function(request){
   navbarPage(
-    theme = bs_theme(version = 5, bootswatch = "simplex"),
-    title = span(shiny::img(src = "inst/app/www/logos_mapdo_evs_ofb.png"), ""),
+    title = div(img(src = "inst/app/www/logos_mapdo_evs_ofb.png"), ""),
     tabPanel("Exploration"),
     tabPanel("Documentation",
-             icon("info"))
+             icon("info")),
+    tabPanel("Analysis", mod_analysis_ui("analysis_1")),
+    theme = bs_theme(version = 5, bootswatch = "simplex")
   )
 }
 
@@ -37,7 +36,7 @@ golem_add_external_resources <- function() {
     favicon(ext = "png"),
     bundle_resources(
       path = app_sys("app/www"),
-      app_title = "mapdo_analysis_golem"
+      app_title = "mapdoAnalysis"
     )
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()

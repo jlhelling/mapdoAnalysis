@@ -1,7 +1,8 @@
 Package: mapdoAnalysis
 Title: Mapd'O Analysis module
 Version: 0.0.0.9000
-Authors@R: person('Jan Leo', 'Helling', email = 'jan.helling@ens-lyon.fr', role = c('cre', 'aut'))
+Authors@R: 
+    person("Jan Leo", "Helling", , "jan.helling@ens-lyon.fr", role = c("cre", "aut"))
 Description: PKG_DESC.
 License: MIT + file LICENSE
 URL: https://github.com/jlhelling/mapdo_analysis_golem
@@ -10,7 +11,6 @@ Imports:
     bslib,
     config (>= 0.3.2),
     golem (>= 0.4.1),
-    htmltools,
     shiny (>= 1.8.1.1)
 Suggests: 
     spelling,

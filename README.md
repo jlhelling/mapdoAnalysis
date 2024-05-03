@@ -13,12 +13,10 @@ The goal of mapdoAnalysis is to …
 
 ## Installation
 
-You can install the development version of mapdoAnalysis from
-[GitHub](https://github.com/) with:
+You can install the development version of mapdoAnalysis like so:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("jlhelling/mapdo_analysis_golem")
+# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
 ```
 
 ## Example
