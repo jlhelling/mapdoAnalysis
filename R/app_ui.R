@@ -7,15 +7,15 @@
 #' @noRd
 app_ui <- function(request){
   navbarPage(
-    title = div(img(src = "inst/app/www/logos_mapdo_evs_ofb.png"), ""),
+    title =
+      div(img(src = "img/logos_mapdo_evs_ofb.png"), ""),
     tabPanel("Exploration"),
     tabPanel("Documentation",
-             icon("info")),
+             icon = icon("info")),
     tabPanel("Analysis", mod_analysis_ui("analysis_1")),
     theme = bs_theme(version = 5, bootswatch = "simplex")
   )
 }
-
 
 
 #' Add external Resources to the Application
