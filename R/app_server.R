@@ -5,7 +5,9 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
-  # Your application server logic
 
-  mod_analysis_server("analysis_1")
+  # set database connection
+  con <- db_con()
+
+  mod_analysis_server("analysis_1", con)
 }

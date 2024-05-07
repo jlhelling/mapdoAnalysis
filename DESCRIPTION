@@ -8,10 +8,24 @@ License: MIT + file LICENSE
 URL: https://github.com/jlhelling/mapdo_analysis_golem
 BugReports: https://github.com/jlhelling/mapdo_analysis_golem/issues
 Imports: 
+    bsicons,
     bslib,
     config (>= 0.3.2),
+    DBI,
+    dplyr,
+    glue,
     golem (>= 0.4.1),
-    shiny (>= 1.8.1.1)
+    htmltools,
+    httr,
+    leaflet,
+    magrittr,
+    RPostgres,
+    sf,
+    shiny (>= 1.8.1.1),
+    shinycssloaders,
+    shinyjs,
+    stats,
+    utils
 Suggests: 
     spelling,
     testthat (>= 3.0.0)

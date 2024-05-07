@@ -8,11 +8,11 @@
 app_ui <- function(request){
   navbarPage(
     title =
-      div(img(src = "img/logos_mapdo_evs_ofb.png"), ""),
+      div(img(src = "www/logos_mapdo_evs_ofb.png"), ""),
     tabPanel("Exploration"),
+    tabPanel("Analyse", mod_analysis_ui("analysis_1")),
     tabPanel("Documentation",
              icon = icon("info")),
-    tabPanel("Analysis", mod_analysis_ui("analysis_1")),
     theme = bs_theme(version = 5, bootswatch = "simplex")
   )
 }
