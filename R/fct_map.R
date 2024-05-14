@@ -313,7 +313,7 @@ map_axis <- function(map, data_axis) {
     addPolylines(data = data_axis,
                  layerId = ~axis,
                  weight = 5,
-                 color = "#ffffff00",
+                 color = "#0077b6",
                  opacity = 1,
                  label = ~toponyme,
                  highlightOptions = highlightOptions(
@@ -489,7 +489,7 @@ map_dgo_axis <- function(map, selected_axis, region_axis, main_metric, second_me
       data = selected_axis,
       layerId = ~fid,
       weight = 5,
-      color = "#ffffff00",
+      color = "#0077b6",
       label = tooltip_label,
       opacity = 1,
       highlightOptions = highlightOptions(

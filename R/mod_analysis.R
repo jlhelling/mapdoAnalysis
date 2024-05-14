@@ -124,6 +124,7 @@ mod_analysis_server <- function(id, con) {
     observeEvent(input$analysemap_shape_click, {
 
       #### bassin clicked ####
+
       if (input$analysemap_shape_click$group == params_map_group()[["bassin"]]){
         # disable the click interactivity for the bassin selected
         r_val$bassins = r_val$bassins %>%
@@ -184,7 +185,8 @@ mod_analysis_server <- function(id, con) {
                              selected_region_feature = r_val$selected_region_feature,
                              regions_data = r_val$regions_in_bassin,
                              roe_region = r_val$roe_region,
-                             hydro_sites_region = r_val$hydro_sites_region)
+                             hydro_sites_region = r_val$hydro_sites_region) %>%
+          map_axis(data_axis = r_val$network_region_axis)
 
 
         # run only once, control with region_already_clicked
