@@ -1,0 +1,62 @@
+---
+title: "Mapd'O Network metrics grouping"
+author: "Leo Helling"
+title-slide-attributes:
+  data-background-color: "#023e8a"
+---
+```{r set-up}
+#| echo: false
+#| output: false
+library(tidyverse)
+library(leaflet) # for pca-biplots 
+library(sf) # geospatial manipulations
+library(mapview) # geospatial visualisation
+source("~/repositories/mapdoAnalysis/R/fct_map.R")
+
+# setwd("~/repositories/mapdoAnalysis")
+# load files
+load("~/repositories/mapdoAnalysis/data/network_axis.rda")
+load("~/repositories/mapdoAnalysis/data/network_dgo.rda")
+
+
+# # load network metrics
+# network_metrics <- load_network_metrics()
+# 
+# # create network sf-file
+# network_sf <- load_metrics_sf(network_metrics)
+# 
+# # create datasets
+# data_all <- network_metrics |> dplyr::select("strahler":"sum_area")
+# data_discrete <- network_metrics |> dplyr::select("strahler":"built_environment", "sum_area")
+# data_relative <- network_metrics |> dplyr::select("fid", "strahler":"floodplain_slope", "water_channel_pc":"sum_area")
+```
+
+```{r grouping 1: human impact}
+#| echo: false
+#| output: false
+
+df <- network_dgo
+min <- min(df$dense_urban)
+max <- max(df$dense_urban)
+min_95 <- quantile(df$dense_urban, probs = c(0.025, 0.975), na.rm = TRUE)[[1]]
+max_95 <- quantile(df$dense_urban, probs = c(0.025, 0.975), na.rm = TRUE)[[2]]
+
+class1 <- "dense_urban >= 2/3*max_95"
+class2 <- "dense_urban < 2/3*max_95"
+
+
+
+
+class1 <- quote(dense_urban >= 2/3*max_95)
+class2 <- quote(dense_urban > 5)
+
+df <- df |> 
+  dplyr::mutate(
+    class = base::as.factor(dplyr::case_when(!!class1 ~ "high impact",
+                             !!class2 & !(!!class1) ~ "low impact",
+                             !(!!class1 | !!class2) ~ "no impact"))
+  )
+
+mapview(df, zcol = "class")
+
+```
