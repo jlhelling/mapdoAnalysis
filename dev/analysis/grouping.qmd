@@ -15,7 +15,6 @@ source("~/repositories/mapdoAnalysis/R/fct_map.R")
 
 # setwd("~/repositories/mapdoAnalysis")
 # load files
-load("~/repositories/mapdoAnalysis/data/network_axis.rda")
 load("~/repositories/mapdoAnalysis/data/network_dgo.rda")
 
 
@@ -33,7 +32,6 @@ load("~/repositories/mapdoAnalysis/data/network_dgo.rda")
 
 ```{r grouping 1: human impact}
 #| echo: false
-#| output: false
 
 df <- network_dgo
 min <- min(df$dense_urban)

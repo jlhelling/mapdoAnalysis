@@ -65,9 +65,23 @@
 #
 # # Run the application
 # shinyApp(ui, server)
+
+
+
+
+# rhandsontable -----------------------------------------------------------
+# https://rpubs.com/jrowen/intro_rhandsontable
+# https://jrowen.github.io/rhandsontable/#Types
+
+
+
+library(leaflet)
 library(shiny)
+library(shinycssloaders)
 library(dplyr)
 require(rhandsontable)
+library(RColorBrewer)
+load("~/repositories/mapdoAnalysis/data/network_dgo.rda")
 
 
 
@@ -93,16 +107,17 @@ ediTable_server <-
     moduleServer(id,
                  function(input, output, session) {
                    output$hot <- renderRHandsontable({
-                     tmp <- isolate(rd())#Gotta isolate it or it'll cause infinite loop
-                     #Necessary to avoid the issue described [here](https://github.com/jrowen/rhandsontable/issues/166)
+                     tmp <- isolate(rd())# Gotta isolate it or it'll cause infinite loop
+                     # Necessary to avoid the issue described [here](https://github.com/jrowen/rhandsontable/issues/166)
                      rownames(tmp) <- NULL
                      rhandsontable(
                        tmp,
                        allowRowEdit = allowRowEdit,
                        allowColumnEdit = allowColumnEdit,
                        manualRowMove = manualRowMove,
-                       ...
-                     )
+                       rowHeaders = NULL
+                     ) %>%
+                       hot_col("variable", readOnly = TRUE, copyable = TRUE)
 
                    })
 
@@ -123,37 +138,156 @@ ediTable_server <-
 
 # Define UI for the main application
 ui <- fluidPage(
-  # Application title
-  titlePanel("ediTable: editable table widget"),
 
-    # Show a plot of the generated distribution
-    mainPanel(
-      h1("Table 1: a reactive module"),
-      p("Double click a cell to edit."),
-      p("Right click to add or remove rows; click and drag to move."),
-      ediTable(id = "tab"),
-      h3("Outputting the edited data for Table 1"),
-      tableOutput("data1")
-    )
+    h1("Table 1: Groupings"),
+    p("Sélectionnez une métrique et son quantile pour la définition des classes :"),
+    fluidRow(
+      column(width = 2,
+             selectInput("variable", NULL,
+                names(network_dgo),
+                selected = "built_environment_pc"),
+      ),
+      column(width = 1,
+             numericInput("quantile", NULL, value = 95, min = 0, max = 100))
+    ),
+    p("Right click to add or remove rows; click and drag to move."),
+    ediTable(id = "tab"),
+    actionButton("do", "Confirm"),
+    h3("Outputting the edited data for Table 1"),
+    tableOutput("data1"),
+    leafletOutput("analysemap")
 )
+
+
+#' Title
+#'
+#' @param axis_data
+#' @param variable_name
+#' @param no_classes
+#' @param quantile
+#'
+#' @return
+#' @export
+#'
+#' @importFrom RColorBrewer brewer.pal
+#'
+#' @examples
+create_df_input <- function(axis_data, variable_name, no_classes, quantile = 95){
+
+  # set upper and lower boundaries of quantile interval
+  q_low <- (1 - quantile/100)/2
+  q_high <- 1 - q_low
+
+  # calculate quantile values (max, min) and steps
+  q_values <- quantile(axis_data[[variable_name]], probs = c(q_low, q_high), na.rm = TRUE)
+  q_steps <- (q_values[[2]] - q_values[[1]])/no_classes
+
+  # empty dataframe to store class thresholds
+  classes <- rep(0, no_classes)
+
+  # set threshold values of all classes
+  for (i in 1:no_classes) {
+    classes[i] <- q_steps*(no_classes-i)
+  }
+
+  # create dataframe
+  df <- data.frame(class = LETTERS[1:no_classes],
+                   variable = variable_name,
+                   greaterthan = classes,
+                   color = brewer.pal(no_classes, "RdBu"),
+                   stringsAsFactors = FALSE)
+}
+
+#' Assign classes to network dgos
+#'
+#' @param db
+#' @param variables
+#' @param greater_thans
+#' @param class_names
+#'
+#' @return
+#' @export
+#'
+#' @examples
+assign_classes <- function(db, variables, greater_thans, class_names){
+  db %>%
+    mutate(
+      class_name = case_when(
+        !!!rlang::parse_exprs(
+          paste0(variables, ' >= ', greater_thans, ' ~ "', class_names, '"')
+        )
+      )
+    )}
 
 # Define server logic for the main application
 server <- function(input, output) {
   # init_data <- head(mtcars)
-  init_data <- data.frame(groupname = LETTERS[1:6],
-                          variable = factor(rep(names(network_dgo)[1],6), levels = names(network_dgo),
-                                            ordered = TRUE),
-                               threshold = rep(0, 6),
-                               stringsAsFactors = FALSE)
+  init_grouping <- create_df_input(
+    axis_data = network_dgo,
+    variable_name = "buil_environment_pc",
+    no_classes = 4,
+    quantile = 95)
 
-  reactive_data1 <-  reactiveVal(init_data)
+  reactive_grouping <-  reactiveVal(init_grouping)
 
-  ediTable_server(id = "tab", rd = reactive_data1)
 
-  observe({
-    tmp <- reactive_data1()
-    output$data1 <-
-      tmp %>% renderTable()
+  ediTable_server(id = "tab", rd = reactive_grouping)
+
+  output$analysemap <-
+    renderLeaflet({
+      leaflet() %>%
+        setView(lng = 2.468697, lat = 46.603354, zoom = 5) %>%
+        addScaleBar(position = "bottomleft",
+                    scaleBarOptions(metric = TRUE, imperial = FALSE)) %>%
+        addProviderTiles(providers$CartoDB.Positron)
+    })
+
+  # EVENT variable or quantile inputs changed
+  observeEvent(list(input$variable, input$quantile), {
+
+    reactive_grouping <- reactiveVal(
+      create_df_input(
+      axis_data = network_dgo,
+      variable_name = input$variable,
+      no_classes = 4,
+      quantile = input$quantile))
+
+    ediTable_server(id = "tab", rd = reactive_grouping)
+
+  })
+
+    # EVENT table changed
+  observeEvent(input$do, {
+
+    tmp <- reactive_grouping()
+
+    output$data1 <- tmp %>% renderTable()
+
+    # Apply the mutation to create class_1
+    grouped_network <-
+      network_dgo |>
+      assign_classes(
+        variables = as.character(tmp$variable),
+        greater_thans = tmp$greaterthan,
+        class_names = tmp$class
+      ) |>
+      rowwise() |>
+      mutate(
+        color = tmp |> filter(class == class_name) |> pull(color)
+      )
+
+    leafletProxy("analysemap") %>%
+      addPolylines(data = grouped_network,
+                   # layerId = ~class,
+                   weight = 5,
+                   color = ~color,
+                   opacity = 1,
+                   label = ~class_name,
+                   highlightOptions = highlightOptions(
+                     color = "red",
+                     bringToFront = TRUE
+                   ))
+
 
   })
 }
