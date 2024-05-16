@@ -100,9 +100,6 @@ ediTable <- function(id, ...) {
 ediTable_server <-
   function(id,
            rd,
-           allowRowEdit = TRUE,
-           allowColumnEdit = FALSE,
-           manualRowMove = TRUE,
            ...) {
     moduleServer(id,
                  function(input, output, session) {
@@ -112,12 +109,10 @@ ediTable_server <-
                      rownames(tmp) <- NULL
                      rhandsontable(
                        tmp,
-                       allowRowEdit = allowRowEdit,
-                       allowColumnEdit = allowColumnEdit,
-                       manualRowMove = manualRowMove,
                        rowHeaders = NULL
                      ) %>%
-                       hot_col("variable", readOnly = TRUE, copyable = TRUE)
+                       hot_col("variable", readOnly = TRUE, copyable = TRUE) %>%
+                       hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
 
                    })
 
@@ -140,17 +135,18 @@ ediTable_server <-
 ui <- fluidPage(
 
     h1("Table 1: Groupings"),
-    p("Sélectionnez une métrique et son quantile pour la définition des classes :"),
+    p("Sélectionnez une variable et son quantile pour la définition des classes :"),
     fluidRow(
       column(width = 2,
-             selectInput("variable", NULL,
+             selectInput("variable", "Variable",
                 names(network_dgo),
                 selected = "built_environment_pc"),
       ),
       column(width = 1,
-             numericInput("quantile", NULL, value = 95, min = 0, max = 100))
+             numericInput("quantile", "Quantile [%]", value = 95, min = 0, max = 100)),
+      column(width = 1,
+             numericInput("no_classes", "Nbre classes", value = 4, min = 3, max = 10, step = 1))
     ),
-    p("Right click to add or remove rows; click and drag to move."),
     ediTable(id = "tab"),
     actionButton("do", "Confirm"),
     h3("Outputting the edited data for Table 1"),
@@ -243,13 +239,13 @@ server <- function(input, output) {
     })
 
   # EVENT variable or quantile inputs changed
-  observeEvent(list(input$variable, input$quantile), {
+  observeEvent(list(input$variable, input$quantile, input$no_classes), {
 
     reactive_grouping <- reactiveVal(
       create_df_input(
       axis_data = network_dgo,
       variable_name = input$variable,
-      no_classes = 4,
+      no_classes = input$no_classes,
       quantile = input$quantile))
 
     ediTable_server(id = "tab", rd = reactive_grouping)
@@ -282,7 +278,9 @@ server <- function(input, output) {
                    weight = 5,
                    color = ~color,
                    opacity = 1,
-                   label = ~class_name,
+                   label = ~grouped_network[[input$variable]] %>%
+                     sf::st_drop_geometry() %>%
+                     round(2),
                    highlightOptions = highlightOptions(
                      color = "red",
                      bringToFront = TRUE
