@@ -69,7 +69,7 @@
 
 
 
-# rhandsontable -----------------------------------------------------------
+# rhandsontable UI and server -----------------------------------------------------------
 # https://rpubs.com/jrowen/intro_rhandsontable
 # https://jrowen.github.io/rhandsontable/#Types
 
@@ -85,22 +85,29 @@ load("~/repositories/mapdoAnalysis/data/network_dgo.rda")
 
 
 
-#------
-
-#Definition of UI part of ediTable module
-
-ediTable <- function(id, ...) {
+#' ediTable UI function
+#'
+#' @param id
+#'
+#' @return
+#' @importFrom shiny NS
+#' @importFrom rhandsontable rHandsontableOutput
+#'
+ediTable <- function(id) {
   ns <- NS(id)
-  rHandsontableOutput(outputId = ns("hot"), ...)
+  rHandsontableOutput(outputId = ns("hot"))
 
 }
 
-#Server logic for the module
-
+#' ediTable server logic
+#'
+#' @noRd
+#'
+#' @import shiny
+#' @importFrom rhandsontable renderRHandsontable hot_col hot_context_menu hot_to_r
+#'
 ediTable_server <-
-  function(id,
-           rd,
-           ...) {
+  function(id, rd) {
     moduleServer(id,
                  function(input, output, session) {
                    output$hot <- renderRHandsontable({
@@ -113,47 +120,42 @@ ediTable_server <-
                      ) %>%
                        hot_col("variable", readOnly = TRUE, copyable = TRUE) %>%
                        hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
-
                    })
 
                    #Update the reactive values for this user-manipulated data to pass back to main environment
                    observeEvent(input$hot, {
-
-                     tmp <- rhandsontable::hot_to_r(input$hot)
-
+                     tmp <- hot_to_r(input$hot)
                      rd(tmp)
-
-
                    })
-
                  })
   }
 
 
+# UI ----------------------------------------------------------------------
 
 # Define UI for the main application
-ui <- fluidPage(
+ui <- function(id){
 
-    h1("Table 1: Groupings"),
-    p("Sélectionnez une variable et son quantile pour la définition des classes :"),
-    fluidRow(
-      column(width = 2,
-             selectInput("variable", "Variable",
-                names(network_dgo),
-                selected = "built_environment_pc"),
-      ),
-      column(width = 1,
-             numericInput("quantile", "Quantile [%]", value = 95, min = 0, max = 100)),
-      column(width = 1,
-             numericInput("no_classes", "Nbre classes", value = 4, min = 3, max = 10, step = 1))
-    ),
-    ediTable(id = "tab"),
-    actionButton("do", "Confirm"),
-    h3("Outputting the edited data for Table 1"),
-    tableOutput("data1"),
-    leafletOutput("analysemap")
-)
+  ns <- NS(id)
+  tagList(# Leave this function for adding external resources
+    fluidPage(
 
+      fluidRow(
+        column(width = 3,
+               uiOutput(ns("manual_groupingUI"))
+        ),
+        column(
+          width = 7,
+          withSpinner(
+            leafletOutput(ns(
+              "analysemap"
+            )),
+            type = 6)
+        )
+      )
+    )
+  )
+}
 
 #' Title
 #'
@@ -215,19 +217,35 @@ assign_classes <- function(db, variables, greater_thans, class_names){
       )
     )}
 
+
+
+# Server ------------------------------------------------------------------
+
+
 # Define server logic for the main application
-server <- function(input, output) {
-  # init_data <- head(mtcars)
-  init_grouping <- create_df_input(
-    axis_data = network_dgo,
-    variable_name = "buil_environment_pc",
-    no_classes = 4,
-    quantile = 95)
-
-  reactive_grouping <-  reactiveVal(init_grouping)
+server <- <- function(id) {
+  moduleServer(id, function(input, output, session) {
+    ns <- session$ns
 
 
-  ediTable_server(id = "tab", rd = reactive_grouping)
+  # REACTIVE VALUES ---------------------------------------------------------
+  r_val <- reactiveValues(
+    ui_grouping = "manuel", # SelectInput of grouping
+
+    ui_variable = NULL,
+    ui_quantile = NULL,
+    ui_no_classes = NULL,
+    grouping_table_data = NULL,
+    ui_ediTable = NULL,
+
+    ui_apply_groups = NULL
+  )
+
+
+
+  # reactive_grouping <-  reactiveVal(init_grouping)
+  #
+  # ediTable_server(id = "tab", rd = reactive_grouping)
 
   output$analysemap <-
     renderLeaflet({
@@ -238,21 +256,30 @@ server <- function(input, output) {
         addProviderTiles(providers$CartoDB.Positron)
     })
 
-  # EVENT variable or quantile inputs changed
-  observeEvent(list(input$variable, input$quantile, input$no_classes), {
-
-    reactive_grouping <- reactiveVal(
-      create_df_input(
+  # create dataframe with automatically calculated class values
+  reactive_grouping <- reactive({
+    init_grouping <- create_df_input(
       axis_data = network_dgo,
       variable_name = input$variable,
       no_classes = input$no_classes,
-      quantile = input$quantile))
-
-    ediTable_server(id = "tab", rd = reactive_grouping)
-
+      quantile = input$quantile)
+    init_grouping
   })
 
-    # EVENT table changed
+  init <- reactiveVal(reactive_grouping)
+
+  # create editable table
+  ediTable_server(id = "tab", rd = init)
+
+  # # EVENT variable or quantile inputs changed
+  # observeEvent(list(input$variable, input$quantile, input$no_classes), {
+  #
+  #   if (input$variable != "") {
+  #
+  #   }
+  # })
+
+  # EVENT table changed
   observeEvent(input$do, {
 
     tmp <- reactive_grouping()
@@ -285,12 +312,14 @@ server <- function(input, output) {
                      color = "red",
                      bringToFront = TRUE
                    ))
-
-
+  })
   })
 }
 
+
+# RUN APP -----------------------------------------------------------------
+
+
+
 # Run the application
 shinyApp(ui = ui, server = server)
-
-
